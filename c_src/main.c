@@ -63,9 +63,17 @@ void send_hash(uint64_t hash)
 
     for(i = 0; i < 8; i++)
     {
-        buffer[i] = (hash >> ((7 - i) * i)) && 0xff;
+        buffer[i] = (hash >> ((7 - i) * 8)) & 0xff;
     }
-
+/*
+    buffer[0] = (hash >> 56) & 0xff;
+    buffer[1] = (hash >> 48) & 0xff;
+    buffer[2] = (hash >> 40) & 0xff;
+    buffer[3] = (hash >> 32) & 0xff;
+    buffer[4] = (hash >> 24) & 0xff;
+    buffer[5] = (hash >> 16) & 0xff;
+    buffer[6] = (hash >> 8) & 0xff;
+    buffer[7] = hash & 0xff;*/
     send_msg(buffer, 8);
 }
 
@@ -97,6 +105,7 @@ int main(void)
         hash = compute_hash(file);
         send_hash(hash);
         fclose(file);
+        free(episode_name);
     }
 
     return 0;

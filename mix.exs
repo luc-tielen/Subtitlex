@@ -11,7 +11,7 @@ defmodule Subtitlex.Mixfile do
   end
   
   def application do
-    [applications: [:logger, :cure],
+    [applications: [:logger, :cure, :httpoison],
     registered: [Subtitlex.Supervisor],
     mod: {Subtitlex, []}]
   end
@@ -24,7 +24,10 @@ defmodule Subtitlex.Mixfile do
   end
 
   defp deps do
-    [{:cure, "~> 0.0.2"}]
+    [{:cure, "~> 0.0.2"},
+      {:pipe, "~> 0.0.1"},
+      {:httpoison, "~> 0.4"},
+      {:sweet_xml, "~> 0.1.0"}]
   end
 
   defp package do
