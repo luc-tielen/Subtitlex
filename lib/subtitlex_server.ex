@@ -2,12 +2,13 @@ defmodule Subtitlex.Server do
   use GenServer
   alias Subtitlex.OpenSubtitles
 
-  def fetch(server, episode_name, api \\ :opensubtitles) 
+  def fetch(server, episode_name, api \\ :opensubtitles, language \\ :english) 
       when server |> is_pid
       and episode_name |> is_binary
-      and api |> is_atom do
+      and api |> is_atom 
+      and language |> is_atom do
     episode_location = abs_path(episode_name)
-    server |> GenServer.cast({:fetch, episode_location, api})
+    server |> GenServer.cast({:fetch, episode_location, api, language})
   end
 
   def start_link do
@@ -23,12 +24,11 @@ defmodule Subtitlex.Server do
     server |> GenServer.cast(:stop)
   end
 
-  def handle_cast({:fetch, episode, :opensubtitles}, state) do
+  def handle_cast({:fetch, episode, :opensubtitles, _lang}, state) do
     OpenSubtitles.fetch(episode)
-    IO.puts "after fetch"
     {:noreply, state}
   end
-  def handle_cast({:fetch, episode, api}, state) do
+  def handle_cast({:fetch, _episode, api}, state) do
     IO.puts "API for #{api} isn't implemented yet!"
     {:noreply, state}
   end

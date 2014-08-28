@@ -58,10 +58,18 @@ defmodule Subtitlex do
       - MORE COMING SOON!
     """
   end
-  defp handle({episodes, language: _lang}) do
+  defp handle({episodes, language: lang}) do
     # TODO implement language and other API's later!
-    Subtitlex.Fetcher.fetch episodes, :opensubtitles
-    :timer.sleep 2000 # Otherwise processes get interrupted during fetching.
-    # TODO remove later..
+    api = :opensubtitles 
+    Subtitlex.Fetcher.start_link(episodes, api, lang)
+    
+    receive do
+      :finished -> 
+        IO.puts "Finished downloading subtitles."
+      :stopped -> 
+        :ok
+    after 10000 ->
+      IO.puts "Timeout."
+    end
   end
 end

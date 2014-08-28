@@ -7,6 +7,7 @@ Subtitle-fetcher, written in Elixir and C. Concurrently fetches subtitles from O
 ## Usage
 
 subtitlex name(s)_of_episode(s) -l language
+
 Example: subtitlex CoolestShowEver.mp4 bestSeriesEver.mkv -l en
 
 ## Requirements
