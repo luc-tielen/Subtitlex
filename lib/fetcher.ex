@@ -1,22 +1,18 @@
 defmodule Subtitlex.Fetcher do
-  alias Subtitlex.OpenSubtitles
   require Logger
 
-  def fetch(episode_name, api \\ :opensubtitles) 
-      when episode_name |> is_binary
+  def fetch([], _api) do
+    :ok
+  end
+  def fetch([episode | rest] = _episodes, api \\ :opensubtitles) 
+      when episode |> is_binary
       and api |> is_atom do
-    
-    HTTPoison.start
-    
-    episode_location = abs_path(episode_name)
-    
-    case api do
-      :opensubtitles -> OpenSubtitles.fetch(episode_location)
-      _ -> raise ArgumentError, message: "API #{api} isn't implemented yet!"
-    end
+    do_fetch(episode, api)
+    fetch(rest, api)
   end
 
-  defp abs_path(episode_name) do
-    Path.expand episode_name
+  defp do_fetch(episode, api) do
+    {:ok, server} = Subtitlex.Supervisor.start_child
+    server |> Subtitlex.Server.fetch(episode, api)
   end
 end

@@ -1,21 +1,21 @@
 defmodule Subtitlex.OpenSubtitles do
   alias Subtitlex.Subtitle
+  import SweetXml
   require Logger
   use Pipe
-  import SweetXml
   
   @base_url "http://www.opensubtitles.org"
   @tmp_dir "/tmp/"
 
   def fetch(episode_name) when episode_name |> is_binary do
-    pipe_matching {:ok, _},
+    pipe_matching {:ok, _, _},
     {:ok, episode_name}
       |> get_hash
       |> get_list_of_subs
-      |> choose_best_srt(episode_name)
-      |> download_subtitle(episode_name)
-      |> unzip(episode_name)
-      |> rename_file(episode_name)
+      |> choose_best_srt
+      |> download_subtitle
+      |> unzip
+      |> rename_file
   end
 
   defp get_hash({:ok, episode_name}) do
@@ -36,7 +36,7 @@ defmodule Subtitlex.OpenSubtitles do
         hash = Integer.to_string hash_value, 16
         Logger.debug "Hash: " <> hash
         server |> Cure.Supervisor.terminate_child
-        {:ok, hash}
+        {:ok, hash, episode_name}
       after 1000 -> 
         Logger.error "Timeout calculating hash."  
         server |> Cure.Supervisor.terminate_child
@@ -44,7 +44,7 @@ defmodule Subtitlex.OpenSubtitles do
     end
   end
 
-  defp get_list_of_subs({:ok, hash}) do
+  defp get_list_of_subs({:ok, hash, episode_name}) do
     # TODO make language etc not hardcoded! 
     # maybe use agent (register process) to store settings?
     url = @base_url <> "/en/search/sublanguageid-eng/moviehash-" 
@@ -73,15 +73,15 @@ defmodule Subtitlex.OpenSubtitles do
       Subtitle.new(sub_url, sub_rating)
     end
 
-    {:ok, subtitles}
+    {:ok, subtitles, episode_name}
   end
 
-  defp choose_best_srt({:ok, []}, episode_name) do
-    episode = episode_name |> String.split("/") |> Enum.fetch! -1 
+  defp choose_best_srt({:ok, [], episode_name}) do
+    episode = episode_name |> format_name 
     Logger.debug "No subtitles found for " <> episode <> "."
     {:error, :no_subtitles_found}
   end
-  defp choose_best_srt({:ok, [%Subtitle{} | _] = subtitles}, episode_name) do
+  defp choose_best_srt({:ok, [%Subtitle{} | _] = subtitles, episode_name}) do
     sort_function = fn(%Subtitle{rating: rating1}, 
                       %Subtitle{rating: rating2}) ->
       rating1 > rating2
@@ -91,19 +91,19 @@ defmodule Subtitlex.OpenSubtitles do
       subtitles 
         |> Enum.sort(sort_function)
         |> List.first
-    {:ok, best_subtitle}
+    {:ok, best_subtitle, episode_name}
   end
 
-  defp download_subtitle({:ok, %Subtitle{link: link}}, episode_name) do
+  defp download_subtitle({:ok, %Subtitle{link: link}, episode_name}) do
     %HTTPoison.Response{body: zip_file} = HTTPoison.get link
-    episode = episode_name |> String.split("/") |> Enum.fetch! -1
+    episode = episode_name |> format_name
     zip_location = @tmp_dir <> episode <> ".zip"
     File.write! zip_location, zip_file
-    {:ok, zip_location}
+    {:ok, zip_location, episode_name}
   end
 
-  defp unzip({:ok, zipped_subtitle_location}, episode_name) do
-    episode = episode_name |> String.split("/") |> Enum.fetch! -1
+  defp unzip({:ok, zipped_subtitle_location, episode_name}) do
+    episode = episode_name |> format_name
     folder_name = @tmp_dir <> episode <> "/"
     
     System.cmd("unzip", [zipped_subtitle_location, "-d", folder_name])
@@ -114,10 +114,10 @@ defmodule Subtitlex.OpenSubtitles do
         |> Enum.filter(fn(file) ->
           String.contains? file, ".srt"
         end)
-    {:ok, folder_name <> subtitle}
+    {:ok, folder_name <> subtitle, episode_name}
   end
 
-  defp rename_file({:ok, srt_file}, episode_name) do
+  defp rename_file({:ok, srt_file, episode_name}) do
     new_subtitle_name =
       episode_name
         |> String.split(".")
@@ -127,5 +127,9 @@ defmodule Subtitlex.OpenSubtitles do
 
     File.cp!(srt_file, new_subtitle_name)
     Logger.debug "Downloaded " <> new_subtitle_name <> "."
+  end
+
+  defp format_name(episode_name) do
+    episode_name |> String.split("/") |> Enum.fetch! -1
   end
 end

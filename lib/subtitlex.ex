@@ -11,6 +11,7 @@ defmodule Subtitlex do
       language = Keyword.get(args, :language, :english)
     end
     
+    HTTPoison.start
     Subtitlex.Supervisor.start_link
   end
 
