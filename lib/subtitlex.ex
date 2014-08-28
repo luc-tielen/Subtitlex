@@ -1,47 +1,52 @@
 defmodule Subtitlex do
   use Application
-  
-  def start(_type, _args) do
-    args = parse_arguments
 
-    if Keyword.get(args, :show_help) do
-      show_help #TODO check if program exits properly here
-    else
-      episodes = Keyword.get_values(args, :episode)
-      language = Keyword.get(args, :language, :english)
-    end
-    
+  @moduledoc """
+  Application module for Subtitlex. Also provides the entry point for the
+  escript.
+  """
+
+  @doc """
+  Starts the application.
+  """
+  def start(_type, _args) do
     HTTPoison.start
     Subtitlex.Supervisor.start_link
   end
-
-  defp parse_arguments do
-    System.argv |> parse_arguments
+  
+  @doc """
+  Invoked by the escript when executed.
+  """
+  def main(args) do
+    args 
+      |> parse_arguments
+      |> handle
   end
 
-  defp parse_arguments([]), do: [show_help: true]
-  defp parse_arguments(args), do: parse_arguments(args, [])
-  defp parse_arguments([], acc), do: acc
-  defp parse_arguments(["-h" | _rest], _acc), do: [show_help: true]
-  defp parse_arguments(["--help" | _rest], _acc), do: [show_help: true]
-  defp parse_arguments(["-l", language | rest], acc) do
-    lang = case language do
-      "english" -> :english
-      "en" -> :english
-      #TODO other languages!
-      _ -> raise ArgumentError, 
-                  message: "Language '#{language}' isn't supported yet!"
+  defp parse_arguments(args) do
+    options = OptionParser.parse(args, 
+                                switches: [help: :boolean, lang: :string],
+                                aliases: [h: :help, l: :lang])
+    case options do
+      {[help: true], _, _} -> 
+        :help
+      {[], episodes, _} ->
+        # If no language specified
+        {episodes, language: :english}
+      {[lang: "en"], episodes, _} -> 
+        {episodes, language: :english}
+      {[lang: "english"], episodes, _} -> 
+        {episodes, language: :english}
+
+      # TODO other languages..
+      _ -> 
+        :help
     end
-
-    parse_arguments(rest, [{:language, lang} | acc])
-  end
-  defp parse_arguments([episode | rest], acc) do
-    parse_arguments(rest, [{:episode, episode} | acc])
   end
 
-  defp show_help do
+  defp handle(:help) do
     IO.puts """
-    Usage: 'subtitlex name(s)_of_episode(s) -l language
+    Usage: 'subtitlex name(s)_of_episode(s) -l language'
     Example: 'subtitlex coolest_show_ever.mp4 best_series_ever.mkv -l en'
 
     Current supported languages:
@@ -52,5 +57,11 @@ defmodule Subtitlex do
       - Opensubtitles
       - MORE COMING SOON!
     """
+  end
+  defp handle({episodes, language: _lang}) do
+    # TODO implement language and other API's later!
+    Subtitlex.Fetcher.fetch episodes, :opensubtitles
+    :timer.sleep 2000 # Otherwise processes get interrupted during fetching.
+    # TODO remove later..
   end
 end

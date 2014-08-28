@@ -7,7 +7,8 @@ defmodule Subtitlex.Mixfile do
      elixir: "~> 0.15.1",
      description: description,
      deps: deps,
-     package: package]
+     package: package,
+     escript: escript]
   end
   
   def application do
@@ -35,5 +36,13 @@ defmodule Subtitlex.Mixfile do
     contributors: ["Luc Tielen"],
     licenses: ["MIT"],
     links: %{"GitHub" => "https://github.com/Primordus/Subtitlex.git"}]
+  end
+
+  def escript do
+    [main_module: Subtitlex,
+     escript_embed_extra_apps: [:cure, 
+                                :pipe, 
+                                :httpoison, 
+                                :sweet_xml]]
   end
 end

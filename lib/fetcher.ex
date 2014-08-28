@@ -1,6 +1,5 @@
 defmodule Subtitlex.Fetcher do
-  require Logger
-
+  
   def fetch([], _api) do
     :ok
   end
