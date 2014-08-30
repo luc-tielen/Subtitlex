@@ -25,8 +25,7 @@ defmodule Subtitlex.Mixfile do
   end
 
   defp deps do
-    [#{:cure, "~> 0.2.0"},
-      {:cure, git: "https://github.com/Primordus/Cure.git"},
+    [{:cure, "~> 0.2.1"},
       {:pipe, "~> 0.0.1"},
       {:httpoison, "~> 0.4"},
       {:sweet_xml, "~> 0.1.0"}]
