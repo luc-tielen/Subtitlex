@@ -23,6 +23,7 @@ defmodule Subtitlex do
       |> handle
   end
 
+  @doc false
   defp parse_arguments(args) do
     options = OptionParser.parse(args, 
                                 switches: [help: :boolean, lang: :string],
@@ -48,6 +49,7 @@ defmodule Subtitlex do
     end
   end
 
+  @doc false
   defp handle(:help) do
     IO.puts """
     Usage: 'subtitlex name(s)_of_episode(s) -l language'

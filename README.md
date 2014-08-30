@@ -1,6 +1,6 @@
 # Subtitlex
 
-**Work in progress..**
+**Work in progress.**
 
 Subtitle-fetcher, written in Elixir and C. Concurrently fetches subtitles from Opensubtitles.org.
 
@@ -9,6 +9,11 @@ Subtitle-fetcher, written in Elixir and C. Concurrently fetches subtitles from O
 subtitlex name(s)_of_episode(s) -l language
 
 Example: subtitlex CoolestShowEver.mp4 bestSeriesEver.mkv -l en
+
+## Supported languages
+
+- English (en) (default)
+- Dutch (nl)
 
 ## Requirements
 

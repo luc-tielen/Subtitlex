@@ -3,14 +3,19 @@ defmodule Subtitlex.OpenSubtitles do
   import SweetXml
   use Pipe
   
+  @moduledoc """
+  Module containing the code to fetch subtitles from OpenSubtitles.org.
+  """
+
   @base_url "http://www.opensubtitles.org"
   @tmp_dir "/tmp/"
 
+  @doc """
+  Tries to fetch a subtitle for a specific episode.
+  """
   def fetch(episode_name, language \\ :english) 
       when episode_name |> is_binary 
       and language |> is_atom do
-
-    #TODO implement other languages!
 
     pipe_matching {:ok, _},
     {:ok, {episode_name, language}}
@@ -24,6 +29,7 @@ defmodule Subtitlex.OpenSubtitles do
     Subtitlex.Fetcher.notify_done(episode_name)
   end
 
+  @doc false
   defp get_hash({:ok, {episode_name, language}}) do
     {:ok, server} = Cure.load "./c_src/program"
     server |> Cure.send_data(episode_name)
@@ -51,6 +57,7 @@ defmodule Subtitlex.OpenSubtitles do
     end
   end
 
+  @doc false
   defp get_list_of_subs({:ok, {hash, episode_name, language}}) do
     lang = case language do
       :english -> "eng"
@@ -65,7 +72,7 @@ defmodule Subtitlex.OpenSubtitles do
     
     %HTTPoison.Response{body: subtitle_xml} = HTTPoison.get url
 
-    #TODO improve this code later, add language checking too.. 
+    #TODO improve this code later
     subtitle_urls = 
       subtitle_xml 
         |> xpath(~x"//download/text()"l)
@@ -96,6 +103,7 @@ defmodule Subtitlex.OpenSubtitles do
     end
   end
 
+  @doc false
   defp choose_best_srt({:ok, {[%Subtitle{} | _] = subtitles, episode_name}}) do
     sort_function = fn(%Subtitle{rating: rating1}, 
                       %Subtitle{rating: rating2}) ->
@@ -109,6 +117,7 @@ defmodule Subtitlex.OpenSubtitles do
     {:ok, {best_subtitle, episode_name}}
   end
 
+  @doc false
   defp download_subtitle({:ok, {%Subtitle{link: link}, episode_name}}) do
     %HTTPoison.Response{body: zip_file} = HTTPoison.get link
     episode = episode_name |> format_name
@@ -117,6 +126,7 @@ defmodule Subtitlex.OpenSubtitles do
     {:ok, {zip_location, episode_name}}
   end
 
+  @doc false
   defp unzip({:ok, {zipped_subtitle_location, episode_name}}) do
     episode = episode_name |> format_name
     folder_name = @tmp_dir <> episode <> "/"
@@ -132,6 +142,7 @@ defmodule Subtitlex.OpenSubtitles do
     {:ok, {folder_name <> subtitle, episode_name}}
   end
 
+  @doc false
   defp rename_file({:ok, {srt_file, episode_name}}) do
     new_subtitle_location =
       episode_name
@@ -150,6 +161,7 @@ defmodule Subtitlex.OpenSubtitles do
     IO.puts "Downloaded " <> new_subtitle_name <> "."
   end
 
+  @doc false
   defp format_name(episode_name) do
     episode_name |> String.split("/") |> Enum.fetch! -1
   end
