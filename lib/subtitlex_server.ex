@@ -24,11 +24,11 @@ defmodule Subtitlex.Server do
     server |> GenServer.cast(:stop)
   end
 
-  def handle_cast({:fetch, episode, :opensubtitles, _lang}, state) do
-    OpenSubtitles.fetch(episode)
+  def handle_cast({:fetch, episode, :opensubtitles, language}, state) do
+    OpenSubtitles.fetch(episode, language)
     {:noreply, state}
   end
-  def handle_cast({:fetch, _episode, api}, state) do
+  def handle_cast({:fetch, _episode, api, _language}, state) do
     IO.puts "API for #{api} isn't implemented yet!"
     {:noreply, state}
   end

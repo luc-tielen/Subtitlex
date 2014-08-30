@@ -13,7 +13,7 @@ defmodule Subtitlex.OpenSubtitles do
     #TODO implement other languages!
 
     pipe_matching {:ok, _},
-    {:ok, episode_name}
+    {:ok, {episode_name, language}}
       |> get_hash
       |> get_list_of_subs
       |> choose_best_srt
@@ -24,7 +24,7 @@ defmodule Subtitlex.OpenSubtitles do
     Subtitlex.Fetcher.notify_done(episode_name)
   end
 
-  defp get_hash({:ok, episode_name}) do
+  defp get_hash({:ok, {episode_name, language}}) do
     {:ok, server} = Cure.load "./c_src/program"
     server |> Cure.send_data(episode_name)
     #TODO change to Cure.stop after new Cure version!
@@ -43,7 +43,7 @@ defmodule Subtitlex.OpenSubtitles do
         IO.puts "Episode name: " <> format_name(episode_name) 
                                 <> ", hash: " <> hash
         server |> Cure.Supervisor.terminate_child
-        {:ok, {hash, episode_name}}
+        {:ok, {hash, episode_name, language}}
       after 5000 -> 
         IO.puts "Timeout calculating hash."  
         server |> Cure.Supervisor.terminate_child
@@ -51,10 +51,15 @@ defmodule Subtitlex.OpenSubtitles do
     end
   end
 
-  defp get_list_of_subs({:ok, {hash, episode_name}}) do
-    # TODO make language etc not hardcoded! 
-    # maybe use agent (register process) to store settings?
-    url = @base_url <> "/en/search/sublanguageid-eng/moviehash-" 
+  defp get_list_of_subs({:ok, {hash, episode_name, language}}) do
+    lang = case language do
+      :english -> "eng"
+      :dutch -> "dut"
+      # TODO add more languages here later!
+      _ -> "eng" 
+    end
+
+    url = @base_url <> "/en/search/sublanguageid-" <> lang <> "/moviehash-" 
                     <> hash 
                     <> "/simplexml"
     

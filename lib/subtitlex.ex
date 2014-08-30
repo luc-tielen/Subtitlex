@@ -37,6 +37,10 @@ defmodule Subtitlex do
         {episodes, language: :english}
       {[lang: "english"], episodes, _} -> 
         {episodes, language: :english}
+      {[lang: "nl"], episodes, _} ->
+        {episodes, language: :dutch}
+      {[lang: "nederlands"], episodes, _} ->
+        {episodes, language: :dutch}
 
       # TODO other languages..
       _ -> 
@@ -51,6 +55,7 @@ defmodule Subtitlex do
 
     Current supported languages:
       - English (en) -> default setting.
+      - Dutch (nl)
       - MORE COMING SOON!
         
     Current supported databases:
@@ -69,7 +74,7 @@ defmodule Subtitlex do
       :stopped -> 
         :ok
     after 10000 ->
-      IO.puts "Timeout."
+      IO.puts "Finished downloading subtitles."
     end
   end
 end

@@ -19,10 +19,12 @@ defmodule Subtitlex.Fetcher do
       episodes 
         |> Enum.map(fn(episode) -> {episode, :busy} end) 
         |> Enum.into HashDict.new 
-
-    Enum.map episodes, fn(episode) ->
-      do_fetch(episode, api, language)
-    end
+    
+    spawn(fn ->
+      Enum.map episodes, fn(episode) ->
+        do_fetch(episode, api, language)
+      end
+    end)
 
     {:ok, %State{creator: creator, status: status}}
   end
