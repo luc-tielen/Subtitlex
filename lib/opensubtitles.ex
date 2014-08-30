@@ -33,26 +33,25 @@ defmodule Subtitlex.OpenSubtitles do
   defp get_hash({:ok, {episode_name, language}}) do
     {:ok, server} = Cure.load "./c_src/program"
     server |> Cure.send_data(episode_name)
-    #TODO change to Cure.stop after new Cure version!
 
     receive do
       {:cure_data, "Error reading incoming data." = msg} -> 
         IO.puts msg
-        server |> Cure.Supervisor.terminate_child
+        Cure.stop server
         {:error, :incoming_data}
       {:cure_data, "Error opening file." = msg} -> 
         IO.puts msg
-        server |> Cure.Supervisor.terminate_child
+        Cure.stop server
         {:error, :opening_file}
       {:cure_data, <<hash_value::64>>} ->
         hash = Integer.to_string hash_value, 16
         IO.puts "Episode name: " <> format_name(episode_name) 
                                 <> ", hash: " <> hash
-        server |> Cure.Supervisor.terminate_child
+        Cure.stop server
         {:ok, {hash, episode_name, language}}
       after 5000 -> 
         IO.puts "Timeout calculating hash."  
-        server |> Cure.Supervisor.terminate_child
+        Cure.stop server
         {:error, :timeout}
     end
   end

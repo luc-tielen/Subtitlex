@@ -25,7 +25,7 @@ defmodule Subtitlex.Mixfile do
   end
 
   defp deps do
-    [{:cure, "~> 0.0.2"},
+    [{:cure, "~> 0.2.0"},
       {:pipe, "~> 0.0.1"},
       {:httpoison, "~> 0.4"},
       {:sweet_xml, "~> 0.1.0"}]
