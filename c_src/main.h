@@ -14,9 +14,19 @@
 #define uint64_t unsigned long long
 #endif
 
+/*
+ * Extracts and returns the name of the episode out of the incoming databuffer.
+ */
 char* get_episode_name(byte buffer[], int length);
-uint64_t compute_hash(FILE *file);
-void send_error(char *error_msg);
+
+/*
+ * Returns hash = filesize + checksum first 64Kb + checksum last 64Kb.
+ */
+uint64_t compute_hash(FILE* file);
+
+/*
+ * Sends the hash back to Elixir.
+ */
 void send_hash(uint64_t hash);
 
 #endif

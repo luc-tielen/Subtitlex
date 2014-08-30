@@ -1,9 +1,6 @@
 #include "main.h"
 #include <string.h>
 
-/*
- * Extracts the name of the episode out of the incoming databuffer.
- */
 char* get_episode_name(byte buffer[], int length)
 {
     char *str;
@@ -17,9 +14,6 @@ char* get_episode_name(byte buffer[], int length)
     return str;
 }
 
-/*
- * Hash = filesize + checksum first 64Kb + checksum last 64Kb.
- */
 uint64_t compute_hash(FILE *handle)
 {
     uint64_t hash, file_size, tmp, i;
@@ -43,19 +37,6 @@ uint64_t compute_hash(FILE *handle)
     return hash;
 }
 
-/*
- * Sends an error message back to Elixir.
- * (error_msg has to be terminated with a \0 character for this function to
- *  work properly).
- */
-void send_error(char *error_msg)
-{
-    send_msg(error_msg, strlen(error_msg));
-}
-
-/*
- * Sends the hash back to Elixir.
- */
 void send_hash(uint64_t hash)
 {
     byte buffer[8];
@@ -65,15 +46,7 @@ void send_hash(uint64_t hash)
     {
         buffer[i] = (hash >> ((7 - i) * 8)) & 0xff;
     }
-/*
-    buffer[0] = (hash >> 56) & 0xff;
-    buffer[1] = (hash >> 48) & 0xff;
-    buffer[2] = (hash >> 40) & 0xff;
-    buffer[3] = (hash >> 32) & 0xff;
-    buffer[4] = (hash >> 24) & 0xff;
-    buffer[5] = (hash >> 16) & 0xff;
-    buffer[6] = (hash >> 8) & 0xff;
-    buffer[7] = hash & 0xff;*/
+
     send_msg(buffer, 8);
 }
 
@@ -92,18 +65,19 @@ int main(void)
         if(episode_name == NULL)
         {
             send_error("Error reading incoming data.");
-            return 1; // or continue; ?
+            return 1;
         }
 
         file = fopen(episode_name, "rb");
         if(file == NULL)
         {
             send_error("Error opening file.");
-            return 1; // or continue; ?
+            return 1;
         }
         
         hash = compute_hash(file);
         send_hash(hash);
+
         fclose(file);
         free(episode_name);
     }
