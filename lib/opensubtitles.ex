@@ -31,7 +31,13 @@ defmodule Subtitlex.OpenSubtitles do
 
   @doc false
   defp get_hash({:ok, {episode_name, language}}) do
-    {:ok, server} = Cure.load "./c_src/program"
+    # The following line is bad code, has to be improved in next version of
+    # cure..
+    {:ok, server} = 
+      Application.app_dir(:subtitlex) <> "/../c_src/program"
+        |> Path.expand
+        |> Cure.load
+
     server |> Cure.send_data(episode_name)
 
     receive do

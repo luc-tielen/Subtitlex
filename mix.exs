@@ -4,7 +4,7 @@ defmodule Subtitlex.Mixfile do
   def project do
     [app: :subtitlex,
      version: "0.0.1",
-     elixir: "~> 0.15.1",
+     elixir: "~> 1.0.0-rc1",
      description: description,
      deps: deps,
      package: package,
@@ -25,7 +25,7 @@ defmodule Subtitlex.Mixfile do
   end
 
   defp deps do
-    [{:cure, "~> 0.2.1"},
+    [{:cure, "~> 0.3.1"},
       {:pipe, "~> 0.0.1"},
       {:httpoison, "~> 0.4"},
       {:sweet_xml, "~> 0.1.0"}]
